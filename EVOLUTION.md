@@ -1,6 +1,7 @@
 # Tennis ATP Ranking Visualization - Evolution Log
 
 ## 2025-09-15 - Advanced Chart Features & UI Improvements
+**Commit**: [c85ffdf](https://github.com/fabalicious/tennis-freak/commit/c85ffdf) - Add Y-axis toggle and redesign legend
 
 ### 🔄 Y-Axis Toggle Functionality
 - **Dual View Modes**: Added toggle between Rankings view and Points view
