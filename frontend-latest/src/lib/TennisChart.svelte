@@ -6,10 +6,11 @@
 	export let data: Ranking[] = [];
 	export let width = 800;
 	export let height = 400;
+	export let showPoints = false; // New prop for toggle
 
 	let chartContainer: HTMLDivElement;
 
-	const margin = { top: 20, right: 160, bottom: 40, left: 50 };
+	const margin = { top: 20, right: 50, bottom: 40, left: 200 };
 	const chartWidth = width - margin.left - margin.right;
 	const chartHeight = height - margin.top - margin.bottom;
 
@@ -39,10 +40,26 @@
 			.domain(d3.extent(data, (d) => d3.timeParse('%Y-%m-%d')(d.date)!) as [Date, Date])
 			.range([0, chartWidth]);
 
-		const yScale = d3
-			.scaleLinear()
-			.domain([1, d3.max(data, (d) => d.ranking) || 10])
-			.range([0, chartHeight]); // Inverted for rankings (1 at top)
+		// Custom y-scale logic for rankings vs points
+		let yScale: d3.ScaleLinear<number, number>;
+
+		if (showPoints) {
+			// For points view: create a custom scale where 1st and 10th place stay fixed
+			// Find the points range for players ranked 1-10 to keep positions proportional
+			const rankedData = data.filter(d => d.ranking >= 1 && d.ranking <= 10);
+			const minPoints = d3.min(rankedData, (d) => d.points) || 0;
+			const maxPoints = d3.max(rankedData, (d) => d.points) || 10000;
+
+			// Create scale that maps points to chart positions, keeping extremes fixed
+			yScale = d3.scaleLinear()
+				.domain([maxPoints, minPoints]) // Inverted (higher points at top)
+				.range([0, chartHeight]);
+		} else {
+			// For rankings view: normal ranking scale
+			yScale = d3.scaleLinear()
+				.domain([1, d3.max(data, (d) => d.ranking) || 10])
+				.range([0, chartHeight]); // Inverted for rankings (1 at top)
+		}
 
 		const colorScale = d3
 			.scaleOrdinal(d3.schemeCategory10)
@@ -65,7 +82,7 @@
 		g.append('g').call(
 			d3
 				.axisLeft(yScale)
-				.tickFormat((d) => `#${d}`)
+				.tickFormat((d) => showPoints ? d.toLocaleString() : `#${d}`)
 				.ticks(10)
 		);
 
@@ -77,7 +94,7 @@
 			.attr('dy', '1em')
 			.style('text-anchor', 'middle')
 			.style('font-size', '12px')
-			.text('ATP Ranking');
+			.text(showPoints ? 'ATP Points' : 'ATP Ranking');
 
 		g.append('text')
 			.attr('transform', `translate(${chartWidth / 2}, ${chartHeight + margin.bottom})`)
@@ -89,7 +106,7 @@
 		const line = d3
 			.line<any>()
 			.x((d) => xScale(d.parsedDate))
-			.y((d) => yScale(d.ranking))
+			.y((d) => yScale(showPoints ? d.points : d.ranking))
 			.curve(d3.curveMonotoneX);
 
 		// Draw lines for each player
@@ -110,7 +127,7 @@
 				.append('circle')
 				.attr('class', `dot-${player.replace(/\s+/g, '')}`)
 				.attr('cx', (d) => xScale(d.parsedDate))
-				.attr('cy', (d) => yScale(d.ranking))
+				.attr('cy', (d) => yScale(showPoints ? d.points : d.ranking))
 				.attr('r', 3)
 				.attr('fill', colorScale(player))
 				.on('mouseover', function (event, d) {
@@ -145,29 +162,61 @@
 				});
 		});
 
-		// Legend
+		// Create ranking legend data (latest ranking and points for each player)
+		const latestDate = d3.max(data, (d) => d.date);
+		const latestRankings = data
+			.filter(d => d.date === latestDate && d.ranking <= 10)
+			.sort((a, b) => a.ranking - b.ranking)
+			.slice(0, 10);
+
+		// Left-side ranking legend
 		const legend = g
 			.selectAll('.legend')
-			.data(Array.from(playerData.keys()).slice(0, 8)) // Show top 8 players in legend
+			.data(latestRankings)
 			.enter()
 			.append('g')
 			.attr('class', 'legend')
-			.attr('transform', (d, i) => `translate(${chartWidth + 10}, ${i * 20})`);
+			.attr('transform', (d, i) => `translate(-180, ${(chartHeight / 10) * i + 20})`);
 
-		legend
-			.append('rect')
-			.attr('x', 0)
-			.attr('width', 12)
-			.attr('height', 2)
-			.style('fill', colorScale);
-
+		// Ranking number
 		legend
 			.append('text')
-			.attr('x', 16)
+			.attr('x', 0)
 			.attr('y', 0)
-			.attr('dy', '0.32em')
-			.style('font-size', '11px')
-			.text((d) => d);
+			.attr('dy', '0.35em')
+			.style('font-size', '16px')
+			.style('font-weight', 'bold')
+			.style('fill', '#333')
+			.text((d) => `${d.ranking}.`);
+
+		// Color dot
+		legend
+			.append('circle')
+			.attr('cx', 25)
+			.attr('cy', 0)
+			.attr('r', 6)
+			.style('fill', (d) => colorScale(d.player_name));
+
+		// Player name
+		legend
+			.append('text')
+			.attr('x', 35)
+			.attr('y', 0)
+			.attr('dy', '0.35em')
+			.style('font-size', '14px')
+			.style('font-weight', '500')
+			.style('fill', '#333')
+			.text((d) => d.player_name);
+
+		// Points
+		legend
+			.append('text')
+			.attr('x', 35)
+			.attr('y', 15)
+			.attr('dy', '0.35em')
+			.style('font-size', '12px')
+			.style('fill', '#666')
+			.text((d) => `${d.points.toLocaleString()} points`);
 	}
 
 	onMount(() => {
@@ -175,6 +224,10 @@
 	});
 
 	$: if (data.length && chartContainer) {
+		drawChart();
+	}
+
+	$: if (chartContainer && showPoints !== undefined) {
 		drawChart();
 	}
 </script>

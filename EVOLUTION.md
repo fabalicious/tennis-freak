@@ -1,6 +1,45 @@
 # Tennis ATP Ranking Visualization - Evolution Log
 
+## 2025-09-15 - Advanced Chart Features & UI Improvements
+
+### 🔄 Y-Axis Toggle Functionality
+- **Dual View Modes**: Added toggle between Rankings view and Points view
+  - Rankings mode: Traditional 1-10 ranking positions (lower is better)
+  - Points mode: ATP points scale with proportional spacing
+  - Smart scaling keeps 1st and 10th place players fixed in position
+- **Dynamic Interface**: Toggle button with active state styling
+- **Conditional Rendering**: Chart title, axis labels, and formatting adapt to mode
+- **Real-time Updates**: Smooth transitions when switching between views
+
+### 🎨 Professional Legend Redesign
+- **Left-Side Positioning**: Moved legend from right to left side of chart
+- **Ranking Format**: Shows actual rankings (1., 2., 3., etc.) with bigger fonts
+- **Color Coordination**: Each player has colored dot matching their line color
+- **Current Data Display**: Shows latest ATP points for each player
+- **Vertical Spacing**: Legend spans full chart height for better visual balance
+
+### 📋 Project Organization
+- **TODO.md**: Created structured task tracking system
+- **Progress Tracking**: Systematic approach to feature implementation
+- **Documentation**: Clear roadmap for future enhancements
+
+### 🔧 Technical Enhancements
+- **Reactive Chart Updates**: Chart redraws automatically on toggle changes
+- **Smart Data Filtering**: Legend shows only top 10 ranked players with latest data
+- **Improved Margins**: Optimized chart spacing for new legend layout
+- **Professional Styling**: Enhanced typography and visual hierarchy
+
+### ✅ Completed Features
+1. ✅ Y-axis toggle between rankings and points
+2. ✅ Left-side ranking legend with color dots
+3. ✅ Current points display in legend
+4. ✅ Professional UI styling and layout
+5. ✅ Task management system setup
+
+---
+
 ## 2024-09-14 - Initial Setup & Complete Implementation
+**Commit**: [21d4f65](https://github.com/fabalicious/tennis-freak/commit/21d4f65) - Initial implementation
 
 ### 🚀 Project Foundation
 - **Backend Setup**: FastAPI server with SQLite database

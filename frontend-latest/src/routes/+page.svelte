@@ -8,6 +8,7 @@
 	let loading = true;
 	let error = '';
 	let selectedDateRange = '3months';
+	let showPoints = false;
 
 	const dateRanges = {
 		'1month': { label: '1 Month', days: 30 },
@@ -81,6 +82,16 @@
 				{/each}
 			</select>
 		</div>
+		<div class="control-group">
+			<label for="viewToggle">Y-Axis:</label>
+			<button
+				id="viewToggle"
+				class="toggle-button {showPoints ? 'active' : ''}"
+				on:click={() => showPoints = !showPoints}
+			>
+				{showPoints ? 'Points' : 'Rankings'}
+			</button>
+		</div>
 	</div>
 
 	{#if error}
@@ -96,8 +107,8 @@
 		</div>
 	{:else}
 		<div class="chart-section">
-			<h2>Top 10 ATP Rankings ({dateRanges[selectedDateRange].label})</h2>
-			<TennisChart data={rankings} width={900} height={500} />
+			<h2>Top 10 ATP {showPoints ? 'Points' : 'Rankings'} ({dateRanges[selectedDateRange].label})</h2>
+			<TennisChart data={rankings} width={900} height={500} {showPoints} />
 		</div>
 
 		<div class="stats">
@@ -183,6 +194,34 @@
 	select:focus {
 		outline: none;
 		border-color: #2c5530;
+	}
+
+	.toggle-button {
+		padding: 8px 16px;
+		border: 2px solid #ddd;
+		border-radius: 6px;
+		font-size: 14px;
+		background: white;
+		color: #333;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		min-width: 80px;
+	}
+
+	.toggle-button:hover {
+		border-color: #2c5530;
+		background: #f8f9fa;
+	}
+
+	.toggle-button.active {
+		background: #2c5530;
+		color: white;
+		border-color: #2c5530;
+	}
+
+	.toggle-button:focus {
+		outline: none;
+		box-shadow: 0 0 0 2px rgba(44, 85, 48, 0.2);
 	}
 
 	.error {
